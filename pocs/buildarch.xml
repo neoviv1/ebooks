@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+
+<!-- ======================================================================= -->
+<!-- common-libs -->
+<!-- ======================================================================= -->
+
+<project name="build-lib" default="main" basedir="/home/clearcase/builduser/BUILD">
+
+<property name="include-src" value="false"/>
+
+	
+<property name="refclasses.dir" value="${basedir}/${view}/output/classes/bfsarch"/>
+<property name="refclassesarch.dir" value="${basedir}/${view}/output/classes/archivalBatch"/>
+<property name="refclasseslist.dir" value="${basedir}/${view}/output/classes/bfsarch-list"/>
+<property name="refclassesejb.dir" value="${basedir}/${view}/output/classes/bfsejb"/>
+<property name="refbaseclasses.dir" value="${basedir}/${view}/output/classes/bfsarch-archbase"/>
+<property name="classes.dir" value="${basedir}/${view}/output/ARCH/classes"/>
+<!--property name="stable-jar.dir" value="/view/${view}/home/adminCC/vobstore/Vb_ARCH/stable-jars"/-->
+<property name="viewroot" value="/view/${view}/home/adminCC/vobstore/Vb_ARCH/workspace"/>
+<property name="arch.srcdir" value="${viewroot}/ARCH-jar/src"/>
+<property name="refclassesarchrp.dir" value="${basedir}/${view}/output/RP/classes"/>
+<property name="commonlib.dir" value="/view/${view}/home/adminCC/vobstore/Vb_ARCH/workspace/common-libs/libs"/>
+
+
+<!-- =================================================================== -->
+<!-- Creates the ear archives -->
+<!-- =================================================================== --> 
+	
+<target name="mkdir">
+	<mkdir dir="${basedir}/${view}"/>
+	<mkdir dir="${basedir}/${view}/output"/>
+	<mkdir dir="${basedir}/${view}/output/jar"/>
+	<mkdir dir="${basedir}/${view}/output/ARCH"/>
+	<mkdir dir="${basedir}/${view}/output/ARCH/classes"/>
+</target>	
+
+<target name="compile" depends="mkdir">
+	<echo message="Compiling all java ..."/>	
+	<echo message="********************************* COMPILING ARCH.JAR destination = ${classes.dir} ******************"/>	
+	<javac verbose="false" debug="true" destdir="${classes.dir}" nowarn="true">
+		<src path="${arch.srcdir}"/>
+		<classpath>
+			<pathelement path="${refclasses.dir}"/>
+			<pathelement path="${refclassesarch.dir}"/>
+			<pathelement path="${refclasseslist.dir}"/>
+			<pathelement path="${refclassesejb.dir}"/>
+			<pathelement path="${refbaseclasses.dir}"/>
+			<!--pathelement path="${refclassesarchrp.dir}"/-->
+      			<fileset dir="${commonlib.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="**/ARCH.jar"/>
+        			<!--exclude name="**/RP.jar"/-->
+      			</fileset>
+		</classpath>
+	</javac>
+	<echo message="********************************* COMPILATION SUCCESSFUL destination= ${classes.dir} ******************"/>	
+</target>
+<target name="jar" depends="compile">
+<echo message="Deleting arch jar from ${basedir}/${view}/output  ... " />
+	<echo message="********************************* DELETING ARCH.JAR destination= ${basedir}/${view}/output ******************"/>	
+<delete failonerror="false">
+	<fileset dir="${basedir}/${view}/output">
+	    <include name="ARCH.jar"/>
+	</fileset>
+</delete>
+	<echo message="********************************* DELETION SUCCESSFUL ARCH.JAR destination= ${basedir}/${view}/output ******************"/>	
+
+<echo message="Building ARCH.jar from ${arch.srcdir} ... " />
+	<echo message="********************************* BUILD ARCH.JAR destination= ${basedir}/${view}/output/jar/ARCH.jar ******************"/>	
+<jar jarfile="${basedir}/${view}/output/jar/ARCH.jar" > 
+	<fileset dir="${classes.dir}" includes="com/tcs/bancs/ARCH/*.class" />
+	<!--fileset dir="${arch.srcdir}" includes="com/tcs/bancs/ARCH/*.java" /-->
+</jar>
+	<echo message="********************************* BUILD SUCCESSFUL ARCH.JAR destination= ${basedir}/${view}/output/jar/ARCH.jar ******************"/>	
+
+</target>
+
+<!-- =================================================================== -->
+<!-- main: call previous ant tasks -->
+<!-- =================================================================== -->
+<target name="main" depends="jar">
+</target>
+
+</project>

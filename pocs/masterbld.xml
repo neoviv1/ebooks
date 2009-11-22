@@ -1,0 +1,225 @@
+<project name="Build-from-GIT" default="master-task" basedir="." >
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+<macrodef name = "git">
+    <attribute name = "command" />
+    <attribute name = "dir" default = "" />
+    <element name = "args" optional = "true" />
+    <sequential>
+        <echo message = "git @{command}" />
+        <exec executable = "git" dir = "@{dir}">
+            <arg value = "@{command}" />
+            <args/>
+        </exec>
+    </sequential>
+</macrodef>
+
+<target name="prop">
+		<echo message="The input given is ${db.user} !!!!!!!   "/>
+		<property name="classes.root" value="${basedir}/mybuilds/${db.user}/classes"/>
+		<property name="jar.root" value="${basedir}/mybuilds/${db.user}/jars"/>
+		<property name="zip.root" value="${basedir}/mybuilds/${db.user}/zips"/>
+
+
+		<property name="rep" value="${basedir}/base_rep"/>
+		<property name="work" value="${rep}/workspace"/>
+		<!--property name="srcdir" value="${rep}/${patch}"/-->
+		<echo message="The input given is ${srcdir}   "/>
+
+
+		<property name="bfsarch.srcdir" value="${work}/bfsarch-jar/src"/>
+		<property name="bfsarch-rpbase.srcdir" value="${work}/bfsarch-rpbase"/>
+		<property name="bfsarch-archbase.srcdir" value="${work}/bfsarch-archbase"/>
+		<property name="bfsarch-batch.srcdir" value="${work}/bfsarch-batch-jar/src"/>
+		<property name="bfsarch-list.srcdir" value="${work}/bfsarch-list-jar/src"/>
+		<property name="bfsarch-tags.srcdir" value="${work}/bfsarch-tags-jar/src"/>
+		<property name="bfsejb.srcdir" value="${work}/bfsejb-jar/src"/>
+		<property name="all.jar.dir" value="${work}/all-jar"/>
+		<property name="webarch.srcdir" value="${work}/webarch-jar/src"/>
+		<property name="dboard.srcdir" value="${work}/webarch-jar/src"/>
+		<property name="wizard.srcdir" value="${work}/webarch-jar/src"/>
+		<property name="rc.srcdir" value="${work}/report-controller"/>
+		<property name="ncs.lib.dir" value="${work}/ncs/NCS-common-libs"/>
+		<property name="broadcast-bean.srcdir" value="${work}/broadcast-bean/src"/>
+		<property name="broadcast-web.srcdir" value="${work}/broadcast-web/src"/>
+		<property name="ncs.cachelib.dir" value="${work}/ncs/NCS-Context-Caching/lib"/>
+		<property name="ArchivalBatch.srcdir" value="${work}/ArchivalBatch-jar/src"/>
+		<property name="ArchivalClient.srcdir" value="${work}/ArchivalClient-jar/src"/>
+
+
+		<property name="stable-jar.dir" value="${rep}/stable-jars"/>
+		<property name="commonlib.dir" value="${work}/common-libs"/>
+		<property name="refclassesarch.dir" value="${basedir}/mybuilds/ARCH/classes"/>
+		<property name="arch.jar.dir" value="${basedir}/mybuilds/${db.user}"/>
+		<property file="${rep}/version.properties"/>
+
+
+</target>
+
+
+<target name="mkdir" depends="prop">
+		<mkdir dir="${basedir}/mybuilds"/>
+		<mkdir dir="${basedir}/mybuilds/${db.user}"/>
+		<mkdir dir="${basedir}/mybuilds/${db.user}/jars"/>
+		<mkdir dir="${basedir}/mybuilds/${db.user}/webcontent"/>
+		<mkdir dir="${basedir}/mybuilds/${db.user}/webcontent/WEB-INF"/>
+		<mkdir dir="${basedir}/mybuilds/${db.user}/webcontent/common"/>
+		<mkdir dir="${basedir}/mybuilds/${db.user}/webcontent/stylesheets"/>
+		<mkdir dir="${basedir}/mybuilds/${db.user}/classes"/>
+		<mkdir dir="${basedir}/mybuilds/${db.user}/zips"/>
+		<mkdir dir="${rep}/META"/>
+
+</target>
+
+
+<target name="compile" depends="mkdir">
+
+		<echo message="Compiling all java ..."/>
+
+			<loadfile srcFile="${rep}/patch" property="allfiles"/>
+			<echo message="The input given is ${allfiles}   "/>
+			<!--
+			<exec executable="cp">
+			<arg line="base_rep/${allfiles}"/>
+			</exec-->
+
+
+		<javac srcdir ="${rep}" destdir="${classes.root}"  includesfile="${rep}/patch" >
+
+			<classpath>
+					<fileset dir="${commonlib.dir}">
+					<include name="**/*.jar"/>
+					</fileset>
+					<fileset dir="${stable-jar.dir}">
+					<include name="*.jar"/>
+					</fileset>
+			</classpath>
+		<!--include name="RP-jar/src/com/tcs/bancs/RP/DATA_SOURCE_DETAILS.java"/-->
+
+		</javac>
+
+</target>
+
+
+
+<!--     
+
+
+
+<for list="${allfiles}" param="line">
+    <sequential>
+<propertyregex property="from" input="@{file}" regexp="(.*)=(.*)" select="\1"
+override="true"/> 
+<echo message="The input given is ${from}   "/>
+<javac debug="false" destdir="${classes.root}/bin" nowarn="true">
+<src path="${from}"/>
+</javac>
+       
+    </sequential>
+</for>
+
+
+<echo message="Compiling bfsarch-list ..."/>
+<javac debug="false" destdir="${classes.root}/bin" nowarn="true">
+<src path="${srcdir}"/>
+<classpath>
+<pathelement path="${classes.root}/mcserver"/>
+       <fileset dir="${commonlib.dir}">
+         <include name="**/*.jar"/>
+         <exclude name="**/ARCH.jar"/>
+       </fileset>
+       <fileset dir="${stable-jar.dir}">
+         <include name="*.jar"/>
+       </fileset>
+</classpath>
+</javac>
+
+<echo message="Compiling all contents..."/>
+<javac debug="false" destdir="${classes.root}/bin" nowarn="true">
+<src path="${bfsarch-list.srcdir}"/>
+<classpath>
+<pathelement path="${classes.root}/mcserver"/>
+       <fileset dir="${commonlib.dir}">
+         <include name="**/*.jar"/>
+         <exclude name="**/ARCH.jar"/>
+       </fileset>
+       <fileset dir="${stable-jar.dir}">
+         <include name="*.jar"/>
+       </fileset>
+</classpath>
+</javac> -->
+
+
+
+
+<target name="jar" depends="compile">
+<echo message="Deleting all jars from ${basedir}/mybuilds/${db.user}  ... " />
+<delete failonerror="false">
+<fileset dir="${basedir}/mybuilds/${db.user}" includes="*.jar" excludes="ARCH.jar,RP.jar"/>
+</delete>
+
+
+<!--manifest file="/home/archbuild/base_rep/fulpat" /-->
+
+	<manifest file="MANIFEST.MF">
+				<attribute name="Built-By" value="${user.name}"/>
+		   <section name="Attributes =>">
+				<attribute name="Specification-Title" value="Example"/>
+				<attribute name="Specification-Version" value="${version}"/>
+				<attribute name="Specification-Vendor" value="Example Organization"/>
+				<attribute name="Implementation-Title" value="common"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Example Corp."/>
+		   </section>
+	 </manifest>
+		<echo message="Building the patch jar from  ... " />
+		<jar jarfile="${jar.root}/patch.jar" filesetmanifest="skip" manifest="MANIFEST.MF"> 
+		<metainf dir="${rep}" includes="fulpat"/>
+		<fileset dir="${classes.root}" includes="com/**/*.class" />
+		</jar>
+
+		<zip destfile="${zip.root}/${ver}.patch" >
+		<fileset dir="${rep}" includesfile="${rep}/patch" excludes="**/*.java" />
+		<fileset dir="${jar.root}" includes="**/*.jar"/>
+		<!--zipfileset dir="." includes="/home/archbuild/base_rep/fulpat" fullpath="META/MANIFEST"/-->
+		<zipfileset dir="${rep}" includes="fulpat" fullpath="META-INF/changesets"/>
+		<zipfileset dir="${rep}" includes="version.properties" fullpath="META-INF/version"/>
+		</zip>
+	<echo message="${basedir}/mybuilds .........."/>
+</target>
+
+<!-- ********************GIT Activities ******************     -->
+
+<target name="cloning" description="Clone the repository to the local server.">
+	<git command = "clone">
+	<args>
+	<arg value = "archgit@172.19.98.52:base_rep.git" />
+	   </args>
+	</git>
+</target>
+<target name="gitoper" description="Clone the repository to the local server." depends="cloning" >
+		<!-- <input
+		message="Please enter the branch you want to work with : "
+		addproperty="db.user"
+		defaultvalue="master"
+		/>   -->
+
+<property name="db.user" value="master"/>
+	<echo message="The input given is ${db.user}   "/>
+
+	<git command = "checkout" dir = "base_rep">
+			<args>
+			<arg value = "${db.user}" />
+			</args>
+	</git>
+	<!--git command = "pull" dir = "base_rep" >
+			<args>
+			<arg value = "origin" />
+			<arg value = "${db.user}" />
+			</args>
+	</git-->
+	<git command = "status" dir = "base_rep" />
+</target>
+<target name="master-task" depends="gitoper,prop,jar" />
+
+
+</project>

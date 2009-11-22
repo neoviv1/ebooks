@@ -1,0 +1,829 @@
+<?xml version="1.0"?>
+<project name="Build-from-GIT" default="master-task" basedir="." >
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+<macrodef name = "git">
+    <attribute name = "command" />
+    <attribute name = "dir" default = "" />
+    <element name = "args" optional = "true" />
+    <sequential>
+        <echo message = "git @{command}" />
+        <exec executable = "git" dir = "@{dir}">
+            <arg value = "@{command}" />
+            <args/>
+        </exec>
+    </sequential>
+</macrodef>
+
+<target name="prop">
+
+	<property name="include-src" value="false"/>
+	
+	<echo message="The input given is ${db.user} !!!!!!!   "/>
+
+	<property name="build.dir" value="${basedir}/mybuilds/${db.user}"/>
+	<property name="classes.root" value="${basedir}/mybuilds/${db.user}/classes"/>
+	<property name="jar.root" value="${basedir}/mybuilds/${db.user}/jars"/>
+
+	<property name="rep" value="${basedir}/ARCHITECTURE"/>
+	<property name="work" value="${rep}/workspace"/>
+
+
+	<property name="stable-jar.dir" value="${rep}/stable-jars"/>
+	<property name="bfsarch.srcdir" value="${work}/bfsarch-jar/src"/>
+	<property name="rmc.srcdir" value="${work}/rmc/src"/>
+	<property name="wfw.srcdir" value="${work}/wfw/src"/>
+	<property name="wfe.srcdir" value="${work}/wfe/src"/>
+	<property name="WorkItem.srcdir" value="${work}/WorkItem/src"/>
+	<property name="WorkItem-JMS.srcdir" value="${work}/WorkItem-JMS-jar/src"/>
+	<property name="bfsarch-rpbase.srcdir" value="${work}/bfsarch-rpbase"/>
+	<property name="bfsarch-archbase.srcdir" value="${work}/bfsarch-archbase"/>
+	<property name="bfsarch-batch.srcdir" value="${work}/bfsarch-batch-jar/src"/>
+	<property name="archival-batch.srcdir" value="${work}/Archival-jar/archivalBatch/src"/>
+	<property name="archival-client.srcdir" value="${work}/Archival-jar/Client/src"/>
+	<property name="broadcast-bean.srcdir" value="${work}/broadcast-bean/src"/>
+	<property name="broadcast-web.srcdir" value="${work}/broadcast-web/src"/>
+	<property name="bfsarch-list.srcdir" value="${work}/bfsarch-list-jar/src"/>
+	<property name="bfsarch-tags.srcdir" value="${work}/bfsarch-tags-jar/src"/>
+	<property name="bfsejb.srcdir" value="${work}/bfsejb-jar/src"/>
+	<property name="webarch.srcdir" value="${work}/webarch-jar/src"/>
+	<property name="dboard.srcdir" value="${work}/dboard-jar/src"/>
+	<property name="wizard.srcdir" value="${work}/webarch-jar/src"/>
+	<property name="rc.srcdir" value="${work}/report-controller"/>
+	<property name="ncs.lib.dir" value="${work}/ncs/NCS-common-libs"/>
+
+	<property name="refclassesarch.dir" value="${basedir}/mybuilds/${db.user}/classes/ARCH"/>
+	<property name="refclassesarchrp.dir" value="${basedir}/mybuilds/${db.user}/classes/RP"/>
+	<property name="refclassesmctype.dir" value="${basedir}/mybuilds/${db.user}/classes/mcserver"/>
+
+	<property name="arch.jar.dir" value="${basedir}/mybuilds/${db.user}"/>
+	<property name="mcgui.srcdir" value="${rep}/mcroot/MCraftFileServer/GUI/Sources"/>
+	<property name="mcserver.srcdir" value="${rep}/mcroot/MasterCraftServerSide/Sources"/>
+	<property name="mcutil.srcdir" value="${rep}/mcroot/MasterCraftServerSide/Sources"/>
+	<property name="deployment.dir" value="${rep}/mcroot/Deployment"/>
+
+	<property name="arch.srcdir" value="${work}/ARCH-jar/src"/>
+	<property name="rp.srcdir" value="${work}/RP-jar/src"/>
+	
+
+</target>
+
+<!-- =================================================================== -->
+<!-- Creates the ear archives -->
+<!-- =================================================================== --> 
+	
+<target name="mkdir" depends="prop">
+	<mkdir dir="${basedir}/mybuilds"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}"/>
+
+	<mkdir dir="${basedir}/mybuilds/${db.user}/APP-INF"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/APP-INF/lib"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/bfsarch"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/bfsarch-rpbase"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/bfsarch-archbase"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/bfsarch-batch"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/bfsarch-list"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/bfsarch-tags"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/bfsejb"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/mcgui"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/mcserver"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/webarch"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/dboard"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/wizard"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/report-controller"/>
+
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/archivalBatch"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/Client"/>
+
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/broadcastBean"/>
+	<mkdir dir="${basedir}/mybuilds/${db.user}/classes/broadcastWeb"/>
+
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/WorkItem-JMS"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/WorkItem"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/rmc"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/wfe"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/wfw"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/userlib"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/guifw"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/guilib"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/guitypes"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/GMDCache"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/AjaxFramework"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/MCTaglib"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/MCStrutsLib"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/ChartServletHelpfiles"/>
+	
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/ARCH"/>
+       <mkdir dir="${basedir}/mybuilds/${db.user}/classes/RP"/>
+
+
+    
+</target>	
+
+<target name="compile" depends="mkdir">
+	<echo message="Compiling all java ..."/>	
+
+
+
+	<echo message="Compiling bfsarch ..."/>
+	<copy todir="${classes.root}/bfsarch/com/tcs/bfsarch/caching">
+		<fileset dir="${bfsarch.srcdir}/com/tcs/bfsarch/caching" >
+			<filename name="cache.properties" />
+		</fileset>
+	</copy>	
+	<echo message="Compiling mctype ...srcpath=${mcserver.srcdir} ... destinationpath=${classes.root}/mcserver/"/>	
+	<javac verbose="false" debug="true" destdir="${classes.root}/mcserver/" nowarn="true">
+		<src path="${mcserver.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/bfsarch"/>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+			
+		</classpath>
+	</javac>
+
+	<echo message="Compiling Archival-Batch ..."/>	
+	<javac debug="true" destdir="${classes.root}/archivalBatch" nowarn="true">
+		<src path="${archival-batch.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/bfsarch"/>
+      		<!--	<fileset dir="${archival-batch.srcdir}">
+        			<include name="*.jar"/>
+      			</fileset>						viv-->
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+
+		</classpath>
+	</javac>
+
+       
+	<!-- *****************        Compiling ARCH-jar 		*********  -->
+
+	<echo message="********************************* COMPILING ARCH.JAR destination = ${classes.root}/ARCH ******************"/>	
+	<javac verbose="false" debug="true" destdir="${classes.root}/ARCH" nowarn="true">
+		<src path="${arch.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/archivalBatch"/>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="**/mcutil.jar.jar"/>
+        			<exclude name="ARCH.jar"/>
+     			</fileset>
+		</classpath>
+	</javac>
+
+
+
+	<!-- ******************          Compilation of RP-jar 	**********************  -->
+
+	<echo message="********************************* COMPILING RP.JAR destination = ${classes.dir}/RP ******************"/>	
+	<javac verbose="false" debug="true" destdir="${classes.root}/RP" nowarn="true">
+		<src path="${rp.srcdir}"/>
+		<classpath>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="RP.jar"/>
+     			</fileset>
+		</classpath>
+	</javac>
+
+
+
+
+
+
+
+	<!-- ******************          Compilation of RP-jar over	**********************  -->
+
+
+
+	<echo message="Compiling bfsarch-rpbase ..."/>		<!-- This has RP classes dependency -->
+	<javac debug="true" destdir="${classes.root}/bfsarch-rpbase" nowarn="true">
+	 <src path="${bfsarch-rpbase.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<pathelement path="${classes.root}/bfsarch"/>
+			<pathelement path="${classes.root}/report-controller"/>
+			<pathelement path="${refclassesarchrp.dir}"/>
+      			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="RP.jar"/>
+        			<exclude name="ArchivalBatch.jar"/>
+        			<exclude name="ArchivalClient.jar"/>
+        			<exclude name="broadcast-bean.jar"/>
+        			<exclude name="broadcast-web.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling bfsarch-archbase ..."/>	<!-- This has ARCH classes dependency -->
+	<javac verbose="false" debug="true" destdir="${classes.root}/bfsarch-archbase" nowarn="true">
+		<src path="${bfsarch-archbase.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<pathelement path="${classes.root}/bfsarch"/>
+			<pathelement path="${refclassesarch.dir}"/>
+			<pathelement path="${refclassesarchrp.dir}"/>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+
+		</classpath>
+	</javac>
+
+	<!-- bfsarch-anbase	-->
+
+		
+	<echo message="Compiling bfsarch-list ..."/>	
+	<javac debug="true" destdir="${classes.root}/bfsarch-list" nowarn="true">
+		<src path="${bfsarch-list.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<pathelement path="${classes.root}/bfsarch"/>
+      			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="bfsarch-list.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+
+     <echo message="Compiling wfw-Jar ..."/>
+        <javac debug="true" destdir="${classes.root}/wfw" nowarn="true">
+                <src path="${wfw.srcdir}"/>
+                <classpath>
+                        <pathelement path="${classes.root}/mcserver"/>
+                        <pathelement path="${classes.root}/bfsarch"/>
+                        <pathelement path="${classes.root}/wfe"/>
+                        <pathelement path="${classes.root}/WorkItem"/>
+			    <fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="bfsarch-list.jar"/>
+       		    </fileset>
+                </classpath>
+        </javac>
+
+     <echo message="Compiling rmc-Jar ..."/>
+        <javac debug="true" destdir="${classes.root}/rmc" nowarn="true">
+                <src path="${rmc.srcdir}"/>
+                <classpath>
+                        <pathelement path="${classes.root}/mcserver"/>
+                        <pathelement path="${classes.root}/bfsarch"/>
+                        <pathelement path="${classes.root}/wfw"/>
+                        <pathelement path="${classes.root}/wfe"/>
+                        <pathelement path="${classes.root}/WorkItem"/>
+                        <fileset dir="${stable-jar.dir}">
+                                <include name="**/*.jar"/>
+                        </fileset>
+                </classpath>
+        </javac>
+
+  <echo message="Compiling wfe-Jar ..."/>
+        <javac debug="true" destdir="${classes.root}/wfe" nowarn="true">
+                <src path="${wfe.srcdir}"/>
+                <classpath>
+                        <pathelement path="${classes.root}/mcserver"/>
+                        <pathelement path="${classes.root}/bfsarch"/>
+                        <pathelement path="${classes.root}/wfw"/>
+                        <pathelement path="${classes.root}/rmc"/>
+                        <pathelement path="${classes.root}/WorkItem"/>
+                        <fileset dir="${stable-jar.dir}">
+                                <include name="**/*.jar"/>
+                        </fileset>
+                </classpath>
+        </javac>
+
+      <echo message="Compiling WorkItem-Jar ..."/>
+        <javac debug="true" destdir="${classes.root}/WorkItem" nowarn="true">
+                <src path="${WorkItem.srcdir}"/>
+                <classpath>
+                        <pathelement path="${classes.root}/mcserver"/>
+                        <pathelement path="${classes.root}/bfsarch"/>
+                        <pathelement path="${classes.root}/wfw"/>
+                        <pathelement path="${classes.root}/wfe"/>
+                        <pathelement path="${classes.root}/rmc"/>
+                        <fileset dir="${stable-jar.dir}">
+                                <include name="**/*.jar"/>
+                        </fileset>
+                </classpath>
+        </javac>
+
+     <echo message="Compiling WorkItem-JMS.Jar ..."/>
+        <javac debug="true" destdir="${classes.root}/WorkItem-JMS" nowarn="true">
+                <src path="${WorkItem-JMS.srcdir}"/>
+                <classpath>
+                        <pathelement path="${classes.root}/mcserver"/>
+                        <pathelement path="${classes.root}/bfsarch"/>
+                       <pathelement path="${classes.root}/wfw"/> 
+                         <pathelement path="${classes.root}/WorkItem"/>
+                          <fileset dir="${stable-jar.dir}">
+                                <include name="**/*.jar"/>
+                        </fileset>
+                </classpath>
+        </javac>
+
+
+     <echo message="Compiling Broadcast Bean ..."/>	
+	<javac debug="true" destdir="${classes.root}/broadcastBean" nowarn="true">
+		<src path="${broadcast-bean.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/bfsarch"/>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+       <echo message="Compiling Broadcast Web ..."/>	
+	<javac debug="true" destdir="${classes.root}/broadcastWeb" nowarn="true">
+		<src path="${broadcast-web.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/bfsarch"/>
+			<pathelement path="${classes.root}/webarch"/>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+	
+	<javac  verbose="false" debug="true" destdir="${classes.root}/bfsarch" >
+		<src path="${bfsarch.srcdir}"/>
+		<exclude name="com/tcs/ncs/**/*.java"/>
+		<classpath>
+			<pathelement path="${classes.root}/bfsarch-archbase"/>
+			<pathelement path="${classes.root}/bfsarch-rpbase"/>
+			<pathelement path="${classes.root}/bfsarch-batch"/>
+			<pathelement path="${classes.root}/bfsarch-list"/>
+			<pathelement path="${classes.root}/WorkItem-JMS"/>
+			<pathelement path="${classes.root}/WorkItem"/>
+			<pathelement path="${classes.root}/wfw"/>
+			<pathelement path="${classes.root}/wfe"/>
+
+			<pathelement path="${classes.root}/broadcastBean"/>
+			<pathelement path="${classes.root}/broadcastWeb"/>
+
+			<pathelement path="${refclassesarch.dir}"/>
+                        <pathelement path="${refclassesmctype.dir}"/>
+			<pathelement path="${classes.root}/bfsejb"/>
+      			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="**/mctype.jar"/>
+        			<exclude name="**/ARCH.jar"/>
+      			</fileset>
+			<fileset dir="${ncs.lib.dir}">
+        			<include name="*.jar"/>
+                                <exclude name="**/NCSUtils.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+
+
+
+	<echo message="Compiling bfsejb ..."/>	
+	<javac debug="true" destdir="${classes.root}/bfsejb" nowarn="true">
+		<src path="${bfsejb.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<pathelement path="${classes.root}/bfsarch"/>
+			<pathelement path="${classes.root}/wfw"/>
+      			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling bfsarch-batch ..."/>	
+	<javac debug="true" destdir="${classes.root}/bfsarch-batch" nowarn="true">
+		<src path="${bfsarch-batch.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<pathelement path="${classes.root}/bfsarch"/>
+      			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+
+	<echo message="Compiling bfsarch-tags ..."/>	
+	<javac debug="true" destdir="${classes.root}/bfsarch-tags" nowarn="true">
+		<src path="${bfsarch-tags.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<pathelement path="${classes.root}/bfsarch"/>
+      			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling webarch ..."/>	
+	<javac verbose="false" debug="true" destdir="${classes.root}/webarch" nowarn="true">
+		<src path="${webarch.srcdir}" />
+		<exclude name="com/tcs/bancs/dboard/**/*.java"/>
+		<exclude name="com/tcs/bancs/dboard//core/**/*.java"/>
+		<exclude name="com/tcs/bancs/wizard/**/*.java"/>
+		<exclude name="com/tcs/bfsarch/offline/**/*.java"/>
+		<exclude name="com/tcs/mastercraft/webarch/localdb/**/*.java"/>
+		<exclude name="com/tcs/mastercraft/webarch/help/*.java"/>
+
+		<!--
+		<include name="com/tcs/mastercraft/webarch/archctl/*.java"/>
+		<include name="com/tcs/mastercraft/clientproxy/*.java"/>
+		<include name="com/tcs/mastercraft/webarch/*.java"/-->
+
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<pathelement path="${refclassesarch.dir}"/>
+			<pathelement location="${basedir}/mybuilds/${db.user}/jar/bfsarch.jar"/>
+			<pathelement path="${classes.root}/bfsarch"/>
+			<pathelement path="${classes.root}/bfsejb"/>
+			<pathelement path="${classes.root}/bfsarch-list"/>
+			<pathelement path="${classes.root}/bfsarch-tags"/>
+			<pathelement path="${classes.root}/wfw"/>
+			<pathelement path="${classes.root}/WorkItem"/>
+
+			<fileset dir="${stable-jar.dir}">
+                                <include name="**/*.jar"/>
+                     </fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling dboard ..."/>	
+	<javac debug="true" destdir="${classes.root}/dboard" nowarn="true">
+		<src path="${dboard.srcdir}"/>
+		<include name="com/tcs/bancs/dboard/**/*.java"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<pathelement path="${classes.root}/mcgui"/>
+			<pathelement path="${classes.root}/bfsarch"/>
+			<pathelement path="${classes.root}/bfsejb"/>
+			<pathelement path="${classes.root}/bfsarch-list"/>
+			<pathelement path="${classes.root}/bfsarch-tags"/>
+			<pathelement path="${classes.root}/webarch"/>
+      			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+	<echo message="Compiling bfswizard ..."/>	
+	<javac verbose="true" debug="true" destdir="${classes.root}/wizard" nowarn="true">
+		<src path="${wizard.srcdir}"/>
+		<include name="com/tcs/bancs/wizard/**/*.java"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<pathelement path="${classes.root}/mcgui"/>
+			<pathelement path="${classes.root}/bfsarch"/>
+			<pathelement path="${classes.root}/bfsejb"/>
+			<pathelement path="${classes.root}/bfsarch-list"/>
+			<pathelement path="${classes.root}/bfsarch-tags"/>
+			<pathelement path="${classes.root}/webarch"/>
+			<pathelement path="${classes.root}/dboard"/>
+      			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+	<echo message="Compiling report-controller ..."/>	
+	<javac debug="true" destdir="${classes.root}/report-controller" nowarn="true">
+		<src path="${rc.srcdir}"/>
+			<exclude name="com/tcs/bancs/reports/common/*.java"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<pathelement path="${classes.root}/mcgui"/>
+			<pathelement path="${classes.root}/bfsarch"/>
+			<pathelement path="${classes.root}/bfsejb"/>
+			<pathelement path="${classes.root}/bfsarch-list"/>
+			<pathelement path="${classes.root}/bfsarch-tags"/>
+			<pathelement path="${classes.root}/bfsarch-rpbase"/>
+			<pathelement path="${refclassesarchrp.dir}"/>
+      			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+      			<fileset dir="${rc.srcdir}/lib">
+        			<include name="*.jar"/>
+        			<exclude name="RP.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+    <echo message="Compiling Archival-Batch ..."/>	
+	<javac debug="true" destdir="${classes.root}/archivalBatch" nowarn="true">
+		<src path="${archival-batch.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/bfsarch"/>
+				<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+      			<!--fileset dir="${archival-batch.srcdir}">
+        			<include name="*.jar"/>
+      			</fileset-->
+		</classpath>
+	</javac>
+
+    <echo message="Compiling Archival-Client ..."/>	
+	<javac debug="true" destdir="${classes.root}/Client" nowarn="true">
+		<src path="${archival-client.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/archivalBatch"/>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+      			<fileset dir="${archival-client.srcdir}">
+        			<include name="*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+<!--
+    <echo message="Compiling Archival-Batch ..."/>	
+	<javac debug="true" destdir="${classes.root}/archival" nowarn="true">
+		<src path="${archival-batch.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/bfsarch"/>
+				<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+      			<fileset dir="${archival-batch.srcdir}">
+        			<include name="*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+    <echo message="Compiling Archival-Client ..."/>	
+	<javac debug="true" destdir="${classes.root}/archival" nowarn="true">
+		<src path="${archival-client.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/bfsarch"/>
+				<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+      			<fileset dir="${archival-client.srcdir}">
+        			<include name="*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+-->
+	<echo message="Compiling mcgui ..."/>	
+	<javac debug="true" destdir="${classes.root}/mcgui" nowarn="true">
+		<src path="${mcgui.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+      			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+</target>
+
+<target name="jar" depends="compile">
+<echo message="Deleting all jars from ${basedir}/mybuilds/${db.user}  ... " />
+<delete failonerror="false">
+	<fileset dir="${basedir}/mybuilds/${db.user}" includes="**/*.jar,**/*.war,**/*.ear"/>
+</delete>
+
+
+<echo message="Building bfsarch.jar from ${classes.root}/bfsarch ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/bfsarch.jar" > 
+	<fileset dir="${classes.root}/bfsarch" includes="com/tcs/bfsarch/**/*.class" excludes="com/tcs/ncs/**/*.class" />
+	<fileset dir="${classes.root}/bfsarch" includes="com/tcs/bfsarch/**/*.properties" />
+	<!--fileset dir="${bfsarch.srcdir}" includes="com/tcs/bfsarch/**/*.java"  /-->
+</jar>
+
+<echo message="Building ARCH.jar from ${classes.root}/ARCH ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/ARCH.jar" > 
+	<fileset dir="${classes.root}/ARCH" includes="com/**/*.class" />
+</jar>
+
+
+<echo message="Building bfsarch-archbase.jar from ${classes.root}/bfsarch-archbase ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/bfsarch-archbase.jar" > 
+	<fileset dir="${classes.root}/bfsarch-archbase" includes="com/**/*.class" />
+</jar>
+<echo message="Building bfsarch-rpbase.jar from ${classes.root}/bfsarch-rpbase ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/bfsarch-rpbase.jar" > 
+	<fileset dir="${classes.root}/bfsarch-rpbase" includes="com/**/*.class" />
+</jar>
+<echo message="Building wfw.jar from ${classes.root}/wfw-rpbase ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/wfw.jar" >
+        <fileset dir="${classes.root}/wfw" includes="com/**/*.class" />
+</jar>
+<echo message="Building wfe.jar from ${classes.root}/wfe ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/wfe.jar" >
+        <fileset dir="${classes.root}/wfe" includes="com/**/*.class" />
+</jar>
+<echo message="Building rmc.jar from ${classes.root}/rmc ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/rmc.jar" >
+        <fileset dir="${classes.root}/rmc" includes="com/**/*.class" />
+</jar>
+
+<echo message="Building WORKITEM.jar from ${classes.root}/WorkItem ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/WorkItem.jar" >
+        <fileset dir="${classes.root}/WorkItem" includes="com/**/*.class" />
+	 <fileset dir="${WorkItem.srcdir}" includes="com/**/*.properties" />
+</jar>
+<echo message="Building WorkItem-JMS-jar from ${classes.root}/WorkItem-JMS ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/WorkItem-JMS.jar" >
+        <fileset dir="${classes.root}/WorkItem-JMS" includes="com/**/*.class" />
+</jar>
+<echo message="Building bfsarch-list.jar from ${classes.root}/bfsarch-list ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/bfsarch-list.jar" > 
+	<fileset dir="${classes.root}/bfsarch-list" includes="com/**/*.class" />
+</jar>
+<echo message="Building bfsarch-tags.jar from ${classes.root}/bfsarch-tags ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/bfsarch-tags.jar" > 
+	<fileset dir="${classes.root}/bfsarch-tags" includes="com/**/*.class" />
+</jar>
+<echo message="Building bfsejb.jar from ${classes.root}/bfsejb ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/bfsejb.jar" > 
+	<fileset dir="${classes.root}/bfsejb" includes="com/**/*.class" />
+</jar>
+<echo message="Building webarch.jar from ${classes.root}/webarch ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/webarch.jar" > 
+        <fileset dir="${classes.root}/webarch" includes="com/**/*.class" excludes="com/tcs/bancs/dboard/**/*.class"/>
+</jar>
+<echo message="Building dboard.jar from ${classes.root}/dboard ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/dboard.jar" > 
+	<fileset dir="${classes.root}/dboard" includes="com/**/*.class" />
+</jar>
+<echo message="Building bfswizard.jar from ${classes.root}/wizard ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/bfswizard.jar" > 
+	<fileset dir="${classes.root}/wizard" includes="com/**/*.class" />
+</jar>
+<echo message="Building report-controller.jar from ${classes.root}/report-controller ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/report-controller.jar" > 
+	<fileset dir="${classes.root}/report-controller" includes="com/**/*.class" />
+</jar>
+
+<echo message="Building archival-batch.jar from ${classes.root}/Archival ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/archival-batch.jar" > 
+	<fileset dir="${classes.root}/archivalBatch" includes="com/**/*.class" />
+	<fileset dir="${archival-batch.srcdir}" includes="com/**/*.xml" />
+	<fileset dir="${archival-batch.srcdir}" includes="com/**/*.properties" />
+</jar>
+<echo message="Building archival-client.jar from ${classes.root}/Archival ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/archival-client.jar" > 
+	<fileset dir="${classes.root}/Client" includes="com/tcs/bancs/**/client/*.class" />
+</jar>
+
+<echo message="Building mctype.jar from ${classes.root}/mctype ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/mctype.jar" > 
+	<fileset dir="${classes.root}/mcserver" includes="com/tcs/mastercraft/mctype/**/*.class" />
+</jar>
+<echo message="Building mcutil.jar from ${classes.root}/mcutil ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/mcutil.jar" > 
+	<fileset dir="${classes.root}/mcserver" includes="com/tcs/mastercraft/mcutil/**/*.class" />
+</jar>
+<echo message="Building bfsarch-batch.jar from ${classes.root}/bfsarch-batch ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/bfsarch-batch.jar" > 
+	<fileset dir="${classes.root}/bfsarch-batch" includes="com/**/*.class" />
+</jar>
+
+<echo message="Building MC Jars from ${mcgui.srcdir} ... " />
+<echo message="Building GMDCache.jar ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/GMDCache.jar" > 
+	<fileset dir="${classes.root}/mcgui" includes="com/tcs/mastercraft/cache/**/*.class" />
+</jar>
+<echo message="Building guilib.jar ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/guilib.jar" > 
+	<fileset dir="${classes.root}/mcgui" includes="com/tcs/mastercraft/guilib/**/*.class" />
+</jar>
+<echo message="Building guifw.jar ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/guifw.jar" > 
+	<fileset dir="${classes.root}/mcgui" includes="com/tcs/mastercraft/guifw/**/*.class" />
+</jar>
+<echo message="Building guitypes.jar ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/guitypes.jar"> 
+	<fileset dir="${classes.root}/mcgui" includes="com/tcs/mastercraft/guitypes/**/*.class" />
+</jar>
+<echo message="Building MCStrutsLib.jar ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/MCStrutsLib.jar" > 
+	<fileset dir="${classes.root}/mcgui" includes="com/tcs/mastercraft/strutslib/**/*.class" />
+</jar>
+<echo message="Building MCTaglib.jar ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/MCTaglib.jar" > 
+	<fileset dir="${classes.root}/mcgui" includes="com/tcs/mastercraft/taglib/**/*.class" />
+</jar>
+<echo message="Building userlib.jar ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/userlib.jar" > 
+	<fileset dir="${classes.root}/mcgui" includes="com/tcs/mastercraft/userlib/**/*.class" />
+</jar>
+<echo message="Building AjaxFramework.jar ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/AjaxFramework.jar" > 
+	<fileset dir="${classes.root}/mcgui" includes="com/tcs/mastercraft/guimod/**/*.class" />
+</jar>
+<echo message="Building ChartServletHelpfiles.jar ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/ChartServletHelpfiles.jar" > 
+	<fileset dir="${classes.root}/mcgui" includes="com/tcs/mastercraft/chart/helpfiles/**/*.class" />
+</jar>
+
+<echo message="Building BroadcastBean.jar ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/BroadcastBean.jar" > 
+	<fileset dir="${classes.root}/broadcastBean" includes="com/**/*.class" />
+</jar>
+
+<echo message="Building BroadcastWeb.jar ... " />
+<jar jarfile="${basedir}/mybuilds/${db.user}/APP-INF/lib/BroadcastWeb.jar" > 
+	<fileset dir="${classes.root}/broadcastWeb" includes="com/**/*.class" />
+</jar>
+
+</target>
+
+<target name="copy" depends="jar">
+
+	<!-- This is to check in to GIT		-->
+	<echo message="Copying modified files from ${db.user}/APP-INF/lib  to ${stable-jar.dir}  ...... " />
+	<copy todir="${stable-jar.dir}" >
+		<fileset dir="${basedir}/mybuilds/${db.user}/APP-INF/lib" excludes="Thumbs.db,ARCH.jar,RP.jar">
+		</fileset> 
+	</copy>
+	<!-- Check in to git repository over -->
+	
+	<echo message="Copying common jars from ${stable-jar.dir}/support-libs  to ${basedir}/mybuilds/${db.user}/APP-INF/lib  ... " />
+	<copy todir="${basedir}/mybuilds/${db.user}/APP-INF/lib" >
+		<fileset dir="${stable-jar.dir}/support-libs" includes="*.jar" excludes="Thumbs.db">
+		</fileset> 
+	</copy>
+	<echo message="Copying MC generated jars from ${stable-jar.dir}  to ${basedir}/mybuilds/${db.user}/APP-INF/lib  ... " />
+	<copy todir="${basedir}/mybuilds/${db.user}/APP-INF/lib" >
+		<fileset dir="${stable-jar.dir}" includes="Domains.jar,ErrorMessages.jar,ChartServlet.jar" excludes="Thumbs.db" />
+	</copy>
+	<echo message="Copying GUI jars from ${rep}/BancsWeb/WEB-INF/lib  to ${basedir}/mybuilds/${db.user}/APP-INF/lib  ... " />
+	<copy todir="${basedir}/mybuilds/${db.user}/APP-INF/lib" >
+		<fileset dir="${rep}/BancsWeb/WEB-INF/lib" includes="*.jar"  />
+	</copy>
+
+
+<!--	<echo message="Copying common jars from ${stable-jar.dir}/bancs-libs  to ${basedir}/mybuilds/${db.user}/jar  ... " />
+	<copy todir="${basedir}/mybuilds/${db.user}/jar" >
+		<fileset dir="${stable-jar.dir}/bancs-libs" includes="WF.jar,QZ.jar,BS.jar" excludes="Thumbs.db">
+		</fileset> 
+	</copy>			-->
+
+
+</target>
+
+<target name="war" depends="copy">
+<war destfile="${basedir}/mybuilds/${db.user}/BancsWeb.war">
+  <fileset dir="${rep}/BancsWeb" excludes="**/*.jar,**/lib/**"/>
+  <fileset dir="${rep}/mcroot/Deployment">
+	<include name="**/c/**"/>
+	<include name="**/stylesheets/**"/>
+	<include name="**/common/**"/>
+	<include name="**/broadcast/**"/>
+	<include name="index.jsp"/>
+   </fileset>
+
+</war>
+</target>
+
+
+<target name="ear" depends="war">
+	<ear destfile="${build.dir}/Bancs.ear" appxml="${work}/metadata/application.xml">
+	      <fileset dir="${build.dir}" includes="**/APP-INF/**/*.jar"/>
+	      <fileset dir="${build.dir}" includes="**/*.war"/>
+	</ear>
+</target>
+	
+<!-- =================================================================== -->
+<!-- main: call previous ant tasks -->
+<!-- =================================================================== -->
+
+<!-- ********************GIT Activities ******************     -->
+
+<target name="cloning" description="Clone the repository to the local server.">
+	<git command = "clone">
+	<args>
+	<arg value = "git@172.19.98.52:ARCHITECTURE.git" />
+	   </args>
+	</git>
+</target>
+<target name="gitoper" description="Clone the repository to the local server." depends="cloning" >
+	<!--	<input	message="Please enter the branch you want to work with : "
+		addproperty="db.user"
+		defaultvalue="master"
+		/>  -->
+
+<property name="db.user" value="master"/>
+	<echo message="The input given is ${db.user}   "/>
+
+	<git command = "checkout" dir = "ARCHITECTURE">
+			<args>
+			<arg value = "${db.user}" />
+			</args>
+	</git>
+	<git command = "pull" dir = "ARCHITECTURE" >
+			<args>
+			<arg value = "origin" />
+			<arg value = "${db.user}" />
+			</args>
+	</git>
+	<git command = "status" dir = "ARCHITECTURE" />
+</target>
+
+
+<target name="master-task" depends="gitoper,prop,ear" />
+
+</project>

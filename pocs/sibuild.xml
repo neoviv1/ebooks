@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<project name="Build-from-GIT" default="master-task" basedir="." >
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+<macrodef name = "git">
+    <attribute name = "command" />
+    <attribute name = "dir" default = "" />
+    <element name = "args" optional = "true" />
+    <sequential>
+        <echo message = "git @{command}" />
+        <exec executable = "git" dir = "@{dir}">
+            <arg value = "@{command}" />
+            <args/>
+        </exec>
+    </sequential>
+</macrodef>
+
+<target name="prop">
+
+	<property name="include-src" value="false"/>
+	
+	<echo message="The input given is ${db.user} !!!!!!!   "/>
+
+	<property name="classes.root" value="${basedir}/sibuild/${db.user}/classes"/>
+	<property name="jar.root" value="${basedir}/sibuild/${db.user}/jars"/>
+
+	<property name="rep" value="${basedir}/ServiceIntegrator"/>
+	<property name="eai.dir" value="${rep}/CORE/source"/>
+	<property name="stable-jar.dir" value="${rep}/ThirdPartyJars"/>
+
+</target>
+
+<!-- =================================================================== -->
+<!-- Creates the ear archives -->
+<!-- =================================================================== --> 
+	
+<target name="mkdir" depends="prop">
+	<mkdir dir="${basedir}/sibuild"/>
+	<mkdir dir="${basedir}/sibuild/${db.user}"/>
+	<mkdir dir="${basedir}/sibuild/${db.user}/jar"/>
+	<mkdir dir="${basedir}/sibuild/${db.user}/classes"/>
+	<mkdir dir="${basedir}/sibuild/${db.user}/classes/eai"/>
+   
+</target>	
+
+<target name="compile" depends="mkdir">
+	<echo message="Compiling all java ..."/>	
+
+
+	<echo message="Compiling eai ...srcpath=${eai.dir} ... destinationpath=${classes.root}/eai"/>	
+	<javac verbose="false" debug="true" destdir="${classes.root}/eai" nowarn="true">
+		<src path="${eai.dir}"/>
+		<classpath>
+		<pathelement path="${classes.root}/eai" />	
+			<fileset dir="${stable-jar.dir}">
+				<include name="**/*.jar"/>
+			</fileset>
+			
+		</classpath>
+	</javac>
+
+</target>
+
+<target name="jar" depends="compile">
+<echo message="Deleting all jars from ${basedir}/sibuild/${db.user}  ... " />
+<delete failonerror="false">
+	<fileset dir="${basedir}/sibuild/${db.user}" includes="*.jar"/>
+</delete>
+
+
+<echo message="Building eai.jar from ${classes.root}/eai ... " />
+<jar jarfile="${basedir}/sibuild/${db.user}/jar/eai.jar" > 
+	<fileset dir="${classes.root}/eai" includes="com/tcs/**/*.class" />
+</jar>
+
+</target>
+
+	
+<!-- =================================================================== -->
+<!-- main: call previous ant tasks -->
+<!-- =================================================================== -->
+
+<!-- ********************GIT Activities ******************     -->
+
+<target name="cloning" description="Clone the repository to the local server.">
+	<git command = "clone">
+	<args>
+	<arg value = "git@172.19.98.52:ServiceIntegrator.git" />
+	   </args>
+	</git>
+</target>
+<target name="gitoper" description="Clone the repository to the local server." depends="cloning" >
+	<!--	<input	message="Please enter the branch you want to work with : "
+		addproperty="db.user"
+		defaultvalue="master"
+		/>  -->
+
+<property name="db.user" value="master"/>
+	<echo message="The input given is ${db.user}   "/>
+
+	<git command = "checkout" dir = "ServiceIntegrator">
+			<args>
+			<arg value = "${db.user}" />
+			</args>
+	</git>
+	<git command = "pull" dir = "ServiceIntegrator" >
+			<args>
+			<arg value = "origin" />
+			<arg value = "${db.user}" />
+			</args>
+	</git>
+	<git command = "status" dir = "ServiceIntegrator" />
+</target>
+
+
+<target name="master-task" depends="gitoper,prop,jar" />
+
+</project>

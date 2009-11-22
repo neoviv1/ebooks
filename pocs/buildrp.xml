@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+
+<!-- ======================================================================= -->
+<!-- common-libs -->
+<!-- ======================================================================= -->
+
+<project name="build-lib" default="main" basedir="/home/clearcase/builduser/BUILD">
+
+<property name="include-src" value="false"/>
+
+	
+<property name="refclasses.dir" value="${basedir}/${view}/output/classes/bfsarch"/>
+<property name="refclasseslist.dir" value="${basedir}/${view}/output/classes/bfsarch-list"/>
+<property name="refclassesejb.dir" value="${basedir}/${view}/output/classes/bfsejb"/>
+<property name="refrpclasses.dir" value="${basedir}/${view}/output/classes/bfsarch-rpbase/"/>
+<property name="classes.dir" value="${basedir}/${view}/output/RP/classes"/>
+
+<property name="viewroot" value="/view/${view}/home/adminCC/vobstore/Vb_ARCH/workspace"/>
+<property name="rp.srcdir" value="${viewroot}/RP-jar/src"/>
+
+<property name="commonlib.dir" value="/view/${view}/home/adminCC/vobstore/Vb_ARCH/workspace/common-libs/libs"/>
+<property name="stablelib.dir" value="/view/${view}/home/adminCC/vobstore/Vb_ARCH/stable-jars"/>
+
+
+<!-- =================================================================== -->
+<!-- Creates the ear archives -->
+<!-- =================================================================== --> 
+	
+<target name="mkdir">
+	<mkdir dir="${basedir}/${view}"/>
+	<mkdir dir="${basedir}/${view}/output"/>
+	<mkdir dir="${basedir}/${view}/output/jar"/>
+	<mkdir dir="${basedir}/${view}/output/RP"/>
+	<mkdir dir="${basedir}/${view}/output/RP/classes"/>
+</target>	
+
+<target name="compile" depends="mkdir">
+	<echo message="Compiling all java ..."/>	
+	<javac debug="true" destdir="${classes.dir}" nowarn="true">
+		<src path="${rp.srcdir}"/>
+		<classpath>
+			<pathelement path="${refclasses.dir}"/>
+			<pathelement path="${refclasseslist.dir}"/>
+			<pathelement path="${refclassesejb.dir}"/>
+			<pathelement path="${refrpclasses.dir}"/>
+      			<fileset dir="${commonlib.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="**/ARCH.jar"/>	
+				<exclude name="**/RP.jar"/>
+      			</fileset>
+      			<fileset dir="${stablelib.dir}">
+        			<include name="*.jar"/>
+        			<exclude name="RP.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+</target>
+<target name="jar" depends="compile">
+<echo message="Deleting rp jar from ${basedir}/${view}/output  ... " />
+<delete failonerror="false">
+	<fileset dir="${basedir}/${view}/output">
+	    <include name="RP.jar"/>
+	</fileset>
+</delete>
+
+<echo message="Building RP.jar from ${rp.srcdir} ... " />
+<jar jarfile="${basedir}/${view}/output/jar/RP.jar" > 
+	<fileset dir="${classes.dir}" includes="com/tcs/bancs/RP/*.class" />
+	<!--fileset dir="${rp.srcdir}" includes="com/tcs/bancs/RP/*.java" /-->
+</jar>
+
+</target>
+
+<!-- =================================================================== -->
+<!-- main: call previous ant tasks -->
+<!-- =================================================================== -->
+<target name="main" depends="jar">
+</target>
+
+</project>
