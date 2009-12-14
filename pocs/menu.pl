@@ -37,11 +37,10 @@ while (1) {
 	print "\t\t\t    Please Select one of the following\n";
 	print "\n";
 	print "\t\t\t1.  Full Build \n";
-	print "\t\t\t2.  Copy from wip to StableJars and Auto-Tag \n";
-	print "\t\t\t3.  Date Wise Patch \n";
-	print "\t\t\t4.  Testing the menu \n";
+	print "\t\t\t2.  Copy from wip to StableJars :: Commit and Auto-Tag \n";
+	print "\t\t\t3.  Push to Release repository \n";
+	print "\t\t\t4.  Date Wise Patch \n";
 	print "\t\t\t5.  Defect Patch \n";
-	print "\t\t\t6.  testing auto \n";
       	print "\t\t\tq.  Quit \n";
 	print "\n";
 
@@ -54,26 +53,15 @@ while (1) {
 		$return = &fullBuild();
 	}
 	elsif ($opt eq 2){
+		print "\nhello vivek !! \n\n";
 		$return = &copy();
 	}
 
-	elsif ($opt eq 3){
+	elsif ($opt eq 4){
 		$return = &rollPatch();
 	}
-	elsif ($opt eq 4) {
-		printf "\t\tThe system time is \t %-s\n", $date; 
-		system("tput smso");
-		print "Press enter to return main menu.";
-		system("tput rmso");
-                my $x = <STDIN>;
-	} 
 	elsif ($opt eq 5) {
 		$return = &shaDiff();
-
-	} 
-
-	elsif ($opt eq 6) {
-		$return = &autoTagging();
 
 	} 
 
@@ -162,6 +150,8 @@ sub copy {
 	`git add .`;
 	`git commit -a -m "Stable jars => $brn...$date_tst"`;
     
+	print "\n Now starting the auto-tagging process ....";
+	&autoTagging();
 	
 	system("tput smso");
 	print "\n\nPress Enter to go back to main menu .....  ";
@@ -173,13 +163,16 @@ sub copy {
 sub branchName {
 	my $brname = `git log --pretty=format:%d --simplify-by-decoration --decorate| head -1|cut -d"," -f2 | cut -d")" -f1 | cut -d"(" -f2`;
 	chomp $brname;
+	$brname =~ s/^\s+//; #remove leading spaces
+	$brname =~ s/\s+$//; #remove trailing spaces
 	return $brname;
 	
 }
 
 
 sub rollPatch {
-	print "Starting to build Rolling Patch ....\n\n";
+	chdir $rep_name;
+	print "Building a Date Wise Patch ....\n\n";
 	print "Please enter the start date (yyyy-mm-dd): ";
         my $sdt = <STDIN>;
 	print "Please enter the end date (yyyy-mm-dd): ";
@@ -301,7 +294,7 @@ SHA:	print "Please enter the [Current SHA-ID / Current Tag Name]: ";
         elsif($_ =~ /^From/) { print substr("$_", 5);  print FILE substr("$_", 5);}
       
 
-	if ($_ =~ m/workspace\/(.*?)\/src/)
+	if ($_ =~ m/SVR_Modules\/(.*?)\/Oracle/)			#changes made
 	#	{print $1;print "\n";}
 		{push(@mod_jar,$1);}
         }
@@ -309,10 +302,10 @@ SHA:	print "Please enter the [Current SHA-ID / Current Tag Name]: ";
                                        #end foreach
         close FILE;
 	
-	remove_duplicates(@mod_jar);
+	remove_duplicates(@mod_jar);		                # removes duplicate elements from the array => here @mod_jar
 	print "\n\n\nSet of jars to copy to WIP: @mod_jar\n\n\n";
 
-	my $file = 'patch';              #remove duplicate file names
+	my $file = 'patch';              #remove duplicate file names from the file called patch
 	my %seen = ();
 	{
    	local @ARGV = ($file);
@@ -327,43 +320,32 @@ SHA:	print "Please enter the [Current SHA-ID / Current Tag Name]: ";
 	
 	print "finished processing file. \n";
 
-########  Adding my changes
-=pod
-	open FILE, "<patch" or die $!;
-        my @check = <FILE>;
-        print @check;
-	foreach (@check) {
-		if ( %workspace/(.*?)/% ) { print "got <$1>\n"; }
-	}
-        close FILE;
 
-
-
-=cut
-
-###################### Testing closed
-
-
-	
 	print "Changing fulpat attributes";
 	`perl -p -i.bak -e 's/^D\t/Delete\t\t/g' '${rep_name}\/fulpat'`;
 	`perl -p -i.bak -e 's/^A\t/Added\t\t/g' '${rep_name}\/fulpat'`;
 	`perl -p -i.bak -e 's/^M\t/Modified\t/g' '${rep_name}\/fulpat'`;
 
 
-#	`ant -f /home/archbuild/masterbld.xml`;	
+	`ant -f /home/archbuild/archbuild.xml`;	
 	print "\n\t\t Build Complete ..... \n";
 	`rm *.bak`;
 	`rm patch.bac`;
+	
+	foreach (@mod_jar)
+	{
+		`cp $HOME\/wip\/$_.jar $HOME\/mybuilds\/temp\/APP-INF\/lib\/.`;
+	}
+
+	print "\n\t\t Moved JARS to temp location ..... \n";
+	`ant -f /home/archbuild/patchbld.xml`;	
+
+	print "\n\t\t Created patch zip file at mybuilds ..... \n";
 
 	print "\n\nPress Enter to go back to main menu";
         my $x = <STDIN>;           ## Use this to exit the flow and come back to the main menu
 
 }
-
-
-
-
 
 
 
@@ -383,74 +365,35 @@ SHA:	print "Please enter the [Current SHA-ID / Current Tag Name]: ";
 	}
 =cut
 
-sub autoTag {
-	my $vpfile = "version.properties";
-	open(INF, "<", $vpfile) or die "open $vpfile failed:$!\n";
-	my $version = <INF>;
-	close(INF);
-
-	my ($abc, $d, $e) = $version =~ /(\d+\.\d+\.\d+)\.(\d+)\.(\d+)/;
-	$e++;
-
-	print "$abc.$d.$e\n";
-
-	open(OUTF, ">", $vpfile) or die "open $vpfile failed:$!\n";
-	print OUTF "ver=$abc.$d.$e\n";
-	close(OUTF);
-#  Paths
-	$headloc="$rep_name\/.git\/refs\/heads";
-  	print "$headloc\n\n\n";
-
-#open(PFILE, "<", $tagloc\/master) or die "open master failed:$!\n";
-  	open PFILE, "<$headloc\/master" or die "open master failed:$!\n";
-  	my @plines = <PFILE>;
-  	print @plines;
-  	close(PFILE);
-  	`git tag $abc.$d.$e`;
-}
-
-
-
 sub autoTagging {
 
 	my ($abc, $d, $e);
-	my $foo='100';
 	chdir "$rep_name";
 
 	my $brn = &branchName();
-
-	print "\n\n\n This is my current branch name   $brn .........\n\n\n\n";
-
 	my $vpfile = ".verprop";
 	open(INF, "<", $vpfile) or die "open $vpfile failed:$!\n";
 	my @version = <INF>;
 	close(INF);
 
-	print "\n\n\n this is a test of perl \n\n\n";
-
-	print "\n\n\nthis is my halwa @version ..........";
-	
-	foreach (@version) { 
-	 if (($_ =~ /^$brn/)) {							#some error in this line ; works if brn repld with master
-	 	($abc, $d, $e) = $_ =~ /(\d+\.\d+\.\d+)\.(\d+)\.(\d+)/;
-		print "\n\n\n alalala \n\n";
-	 print "\n\n fofoo $_"; 
-
-
+	foreach $i(@version) { 
+	 if($i =~ m/$brn/) {		#some error in this line ; works if brn repld with master
+	 	($abc, $d, $e) = $i =~ /(\d+\.\d+\.\d+)\.(\d+)\.(\d+)/;
 		  }
 	}
-	print "\n\nhello mr. $foo \n\n\n";
+
 	print "$abc.$d.$e\n";
 	print "\n\nthis is a test  ...........$abc ";
-	my $g = "$abc.$d.$e";
+	my $g = "$abc.$d.$e";		#contains previous version in .verprop
 	print "\n\n\n this is $g ";
 	++$e;
-	my $f = "$abc.$d.$e";
-
+	my $f = "$abc.$d.$e";		#contains updated version in .verprop
 	print "\n\n$f \n\n\n";
 
 	`perl -p -i.bak -e "s/$brn=$g/$brn=$f/" $rep_name\/$vpfile`;
+	`rm -rf ".verprop.bak"`;
+	`git tag $f`;
 
-	print "\n\nPress Enter to go back to main menu";
-        my $x = <STDIN>;           ## Use this to exit the flow and come back to the main menu
+#	print "\n\nPress Enter to go back to main menu";
+#        my $x = <STDIN>;           ## Use this to exit the flow and come back to the main menu
 }

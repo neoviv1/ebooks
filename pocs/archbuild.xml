@@ -1,0 +1,1001 @@
+<?xml version="1.0"?>
+<project name="Build-from-GIT" default="master-task" basedir="." >
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
+<macrodef name = "git">
+    <attribute name = "command" />
+    <attribute name = "dir" default = "" />
+    <element name = "args" optional = "true" />
+    <sequential>
+        <echo message = "git @{command}" />
+        <exec executable = "git" dir = "@{dir}">
+            <arg value = "@{command}" />
+            <args/>
+        </exec>
+    </sequential>
+</macrodef>
+
+<target name="prop">
+
+	<property name="include-src" value="false"/>
+	
+	<echo message="The input given is ${db.user} !!!!!!!   "/>
+	<property name="build.dir" value="${basedir}/mybuilds/${br.name}"/>
+	
+	<property name="classes.root" value="${build.dir}/classes"/>
+	<property name="jar.root" value="${build.dir}/jars"/>
+	<property name="dbase" value="Oracle"/>
+	<property name="rep" value="${basedir}/ARCH"/>
+	<property name="work" value="${rep}/Sources/Ear/SVR_Modules"/>
+	<property name="web" value="${rep}/Sources/Ear/WEB_Modules"/>
+	
+<!--	<property name="jar-out" value="${basedir}/mybuilds/${br.name}/APP-INF/lib"/>  -->	<!-- Please change the jar-out location as per the requirement -->
+	<property name="jar-out" value="${basedir}/wip"/>
+
+	
+
+
+	<property name="stable-jar.dir" value="${rep}/StableJars"/>
+	<property name="arch.srcdir" value="${work}/ARCH/${dbase}"/>
+	<property name="archival-batch.srcdir" value="${work}/archival-batch/${dbase}"/>  
+	<property name="archival-client.srcdir" value="${work}/archival-client/${dbase}"/>
+	<property name="bfsarch.srcdir" value="${work}/bfsarch/${dbase}"/>
+	<property name="bfsarch-batch.srcdir" value="${work}/bfsarch-batch/${dbase}"/>
+	<property name="bfsarch-archbase.srcdir" value="${work}/bfsarch-archbase/${dbase}"/>
+	<property name="bfsarch-anbase.srcdir" value="${work}/bfsarch-anbase/${dbase}"/>
+	<property name="bfsarch.srcdir" value="${work}/bfsarch/${dbase}"/>
+	<property name="AN.srcdir" value="${work}/AN/${dbase}"/>
+	<property name="bfsarch-jmx.srcdir" value="${work}/bfsarch-jmx/${dbase}"/>
+	<property name="bfsarch-offline.srcdir" value="${work}/bfsarch-offline/${dbase}"/>
+	<property name="bfsarch-rpbase.srcdir" value="${work}/bfsarch-rpbase/${dbase}"/>
+	<property name="rp.srcdir" value="${work}/RP/${dbase}"/>
+	<property name="bfsejb.srcdir" value="${work}/bfsejb/${dbase}"/>
+	<property name="rmc.srcdir" value="${work}/rmc/${dbase}"/>
+	<property name="mctype.srcdir" value="${work}/mctype/${dbase}"/>
+	<property name="wfe.srcdir" value="${work}/wfe/${dbase}"/>
+	<property name="wfw.srcdir" value="${work}/wfw/${dbase}"/>
+	<property name="WorkItem-JMS.srcdir" value="${work}/WorkItem-JMS/${dbase}"/>
+	<property name="bfsarch-list.srcdir" value="${work}/bfsarch-list/${dbase}"/>
+	<property name="GMDCache.srcdir" value="${work}/GMDCache/${dbase}"/>
+	<property name="broadcast-bean.srcdir" value="${work}/broadcast-bean/${dbase}"/>
+	<property name="Domains.srcdir" value="${work}/Domains/${dbase}"/>
+	<property name="mcbatch.srcdir" value="${work}/mcbatch/${dbase}"/>
+	<property name="mcutil.srcdir" value="${work}/mcutil/${dbase}"/>
+
+
+	<!-- Web modules property definition			-->
+	<property name="AjaxFramework.srcdir" value="${web}/AjaxFramework"/>
+	<property name="ANGUI.srcdir" value="${web}/ANGUI"/>
+	<property name="bfsarch-tags.srcdir" value="${web}/bfsarch-tags/${dbase}"/>   <!-- contains oracle and DB2 -->
+	<property name="dboard.srcdir" value="${web}/dboard"/> 
+	<property name="guifw.srcdir" value="${web}/guifw"/>
+	<property name="guilib.srcdir" value="${web}/guilib"/>
+	<property name="guitypes.srcdir" value="${web}/guitypes"/>
+	
+	<property name="MCStrutsLib.srcdir" value="${web}/MCStrutsLib"/>
+	<property name="MCTagLib.srcdir" value="${web}/MCTagLib"/>
+	<property name="report-controller.srcdir" value="${web}/report-controller"/>
+	<property name="rmcGUI.srcdir" value="${web}/rmcGUI"/>
+	<property name="RPGUI.srcdir" value="${web}/RPGUI"/>
+	<property name="userlib.srcdir" value="${web}/userlib"/>
+ 	<property name="webarch.srcdir" value="${web}/webarch"/>
+	<property name="wfeGUI.srcdir" value="${web}/wfeGUI"/>
+	<property name="wfwGUI.srcdir" value="${web}/wfwGUI"/>
+
+
+	
+	
+	<property name="broadcast-web.srcdir" value="${work}/broadcast-web/src"/>	
+	<property name="webarch.srcdir" value="${work}/webarch-jar/src"/>
+	<property name="dboard.srcdir" value="${work}/dboard-jar/src"/>
+	<property name="wizard.srcdir" value="${work}/webarch-jar/src"/>
+	<property name="rc.srcdir" value="${work}/report-controller"/>
+	<property name="ncs.lib.dir" value="${work}/ncs/NCS-common-libs"/>
+	<!--property name="refclassesarch.dir" value="${basedir}/mybuilds/${br.name}/classes/ARCH"/-->
+	<property name="refclassesmctype.dir" value="${basedir}/mybuilds/${br.name}/classes/mcserver"/>
+	<property name="arch.jar.dir" value="${basedir}/mybuilds/${br.name}"/>
+	<property name="mcgui.srcdir" value="${rep}/mcroot/MCraftFileServer/GUI/Sources"/>
+	<property name="mcserver.srcdir" value="${rep}/mcroot/MasterCraftServerSide/Sources"/>	
+	<property name="deployment.dir" value="${rep}/mcroot/Deployment"/>
+
+	
+
+</target>
+
+<!-- =================================================================== -->
+<!-- Creates the ear archives -->
+<!-- =================================================================== --> 
+	
+<target name="mkdir" depends="prop">
+
+	<mkdir dir="${basedir}/wip"/>
+	<mkdir dir="${basedir}/mybuilds"/>
+	<mkdir dir="${basedir}/mybuilds/temp"/>
+	<mkdir dir="${basedir}/mybuilds/temp/APP-INF/lib"/>
+	<mkdir dir="${basedir}/mybuilds/temp/WEB-INF"/>
+
+	<mkdir dir="${basedir}/mybuilds/${br.name}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/APP-INF"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/APP-INF/lib"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/ARCH/${dbase}"/>
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/archival-batch/${dbase}"/>
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/archival-client/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/bfsarch-batch/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/bfsarch-archbase/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/bfsarch-anbase/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/bfsarch/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/AN/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/bfsarch-jmx/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/bfsarch-offline/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/bfsarch-rpbase/${dbase}"/>
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/RP/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/bfsejb/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/rmc/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/mctype/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/wfe/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/wfw/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/WorkItem-JMS/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/bfsarch-list/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/GMDCache/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/broadcast-bean/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/Domains/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/mcbatch/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/mcutil/${dbase}"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/bfsarch-tags/${dbase}"/>			<!-- to check this -->
+
+
+		<!-- Web Modules directory creation	-->
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/AjaxFramework"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/ANGUI"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/dboard"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/guifw"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/guilib"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/guitypes"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/MCStrutsLib"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/MCTagLib"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/report-controller"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/rmcGUI"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/RPGUI"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/userlib"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/webarch"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/wfeGUI"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/wfwGUI"/>
+
+
+
+
+
+
+
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/mcgui"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/mcserver"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/webarch"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/dboard"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/wizard"/>
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/report-controller"/>	
+	<mkdir dir="${basedir}/mybuilds/${br.name}/classes/broadcastWeb"/>
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/WorkItem"/>
+      
+
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/userlib"/>
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/guifw"/>
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/guilib"/>
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/guitypes"/>
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/MCTaglib"/>
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/MCStrutsLib"/>
+       <mkdir dir="${basedir}/mybuilds/${br.name}/classes/ChartServletHelpfiles"/>
+	
+       
+
+
+
+    
+</target>	
+
+<target name="compile" depends="mkdir">
+	<echo message="Compiling all java ..."/>	
+	
+
+	<!-- *****************        Compiling ARCH-jar 		*********  -->
+
+	<echo message="********************************* COMPILING ARCH.jar   destination = ${classes.root}/ARCH ******************"/>	
+	<javac verbose="false" debug="false" destdir="${classes.root}/ARCH/${dbase}" nowarn="true">
+		<src path="${arch.srcdir}"/>
+		<classpath>
+			<!--pathelement path="${classes.root}/archivalBatch"/-->
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="**/mcutil.jar.jar"/>
+        			<exclude name="ARCH.jar"/>
+				<exclude name="**/ErrorMessages-RP.jar"/>
+     			</fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling Archival-Batch ..."/>	
+	<javac debug="true" destdir="${classes.root}/archival-batch/${dbase}" nowarn="true">
+		<src path="${archival-batch.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/bfsarch"/>
+      		
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+				<exclude name="**/ErrorMessages-RP.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+       
+	<echo message="Compiling Archival-Client ..."/>	
+	<javac debug="true" destdir="${classes.root}/archival-client/${dbase}" nowarn="true">		
+		<src path="${archival-client.srcdir}"/>
+		<classpath>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+				<exclude name="**/ErrorMessages-RP.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+
+	<echo message="Compiling bfsarch-batch ..."/>	
+	<javac debug="true" destdir="${classes.root}/bfsarch-batch/${dbase}" nowarn="true">
+		<src path="${bfsarch-batch.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+				<exclude name="**/ErrorMessages-RP.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+
+	<echo message="Compiling bfsarch-archbase ..."/>	<!-- This has ARCH classes dependency -->
+	<javac verbose="false" debug="false" destdir="${classes.root}/bfsarch-archbase/${dbase}" nowarn="true">
+		<src path="${bfsarch-archbase.srcdir}"/>
+		<classpath>
+			<pathelement path="${classes.root}/mcserver"/>
+			<pathelement path="${refclassesarchrp.dir}"/>
+			<pathelement path="${classes.root}/ARCH/${dbase}"/>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="**/ARCH.jar"/>
+				<exclude name="**/ErrorMessages-RP.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+
+	<echo message="Compiling bfsarch-anbase ..."/>	
+	<javac verbose="false" debug="false" destdir="${classes.root}/bfsarch-anbase/${dbase}" nowarn="true">
+		<src path="${bfsarch-anbase.srcdir}"/>
+		<classpath>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+				<exclude name="**/ErrorMessages-RP.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+	
+	<echo message="Compiling bfsarch  ..."/>	
+	<javac  verbose="false" debug="true" destdir="${classes.root}/bfsarch/${dbase}" >
+		<src path="${bfsarch.srcdir}"/>
+		<exclude name="com/tcs/ncs/**/*.java"/>
+		<classpath>
+	<!--		<pathelement path="${classes.root}/bfsarch-archbase"/>
+			<pathelement path="${classes.root}/bfsarch-rpbase"/>
+			<pathelement path="${classes.root}/bfsarch-batch"/>
+			<pathelement path="${classes.root}/bfsarch-list"/>
+			<pathelement path="${classes.root}/WorkItem-JMS"/>
+			<pathelement path="${classes.root}/WorkItem"/>
+			<pathelement path="${classes.root}/wfw"/>
+			<pathelement path="${classes.root}/wfe"/>
+
+			<pathelement path="${classes.root}/broadcastBean"/>
+			<pathelement path="${classes.root}/broadcastWeb"/>
+
+			<pathelement path="${refclassesarch.dir}"/>
+                        <pathelement path="${refclassesmctype.dir}"/>
+			<pathelement path="${classes.root}/bfsejb"/>		
+
+			fileset dir="${ncs.lib.dir}">
+        			<include name="*.jar"/>
+                                <exclude name="**/NCSUtils.jar"/>
+      			</fileset>
+	
+
+	-->
+
+			<pathelement path="${classes.root}/ARCH/${dbase}" />
+			
+      			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="**/mctype.jar"/>
+        			<exclude name="**/ARCH.jar"/>
+        		</fileset>
+			
+		</classpath>
+	</javac>
+
+
+	<echo message="Compiling AN module ..."/>	
+	<javac debug="true" destdir="${classes.root}/AN/${dbase}" nowarn="true">
+		<src path="${AN.srcdir}"/>
+		<classpath>
+      			<pathelement path="${classes.root}/bfsarch-anbase/${dbase}" />
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+
+		</classpath>
+	</javac>
+
+
+ 	<echo message="Compiling bfsarch-jmx module ..."/>	
+		<javac debug="true" destdir="${classes.root}/bfsarch-jmx/${dbase}" nowarn="true">
+			<src path="${bfsarch-jmx.srcdir}"/>
+			<classpath>
+<!--      			<pathelement path="${classes.root}/bfsarch-anbase/${dbase}" /> -->
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+
+		</classpath>
+	</javac>
+
+
+	<!-- ******************          Compilation of RP-jar 	**********************  -->
+
+	<echo message="********************************* COMPILING RP.JAR to  destination = ${classes.root}/RP/${dbase} ******************"/>	
+	<javac verbose="false" debug="true" destdir="${classes.root}/RP/${dbase}" nowarn="true">
+		<src path="${rp.srcdir}"/>
+		<classpath>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="RP.jar"/>
+     			</fileset>
+		</classpath>
+	</javac>
+
+
+
+       <echo message="Compiling bfsarch-rpbase module ..."/>	
+		<javac debug="true" destdir="${classes.root}/bfsarch-rpbase/${dbase}" nowarn="true">
+			<src path="${bfsarch-rpbase.srcdir}"/>
+			<classpath>
+			<pathelement path="${classes.root}/RP/${dbase}" />
+			<pathelement path="${classes.root}/ARCH/${dbase}" />
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+
+		</classpath>
+	</javac>
+
+	<!-- Not in use 
+	<echo message="Compiling bfsarch-offline module ..."/>	
+		<javac debug="true" destdir="${classes.root}/bfsarch-offline/${dbase}" nowarn="true">
+			<src path="${bfsarch-offline.srcdir}"/>
+			<classpath>
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>			
+	-->
+
+
+
+	<echo message="Compiling bfsejb module ..."/>	
+		<javac debug="true" destdir="${classes.root}/bfsejb/${dbase}" nowarn="true">
+			<src path="${bfsejb.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+
+	<echo message="Compiling rmc module ..."/>	
+		<javac debug="true" destdir="${classes.root}/rmc/${dbase}" nowarn="true">
+			<src path="${rmc.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling mctype module ..."/>	
+		<javac debug="true" destdir="${classes.root}/mctype/${dbase}" nowarn="true">
+			<src path="${mctype.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling wfe module ..."/>	
+		<javac debug="true" destdir="${classes.root}/wfe/${dbase}" nowarn="true">
+			<src path="${wfe.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling wfw module ..."/>	
+		<javac debug="true" destdir="${classes.root}/wfw/${dbase}" nowarn="true">
+			<src path="${wfw.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling WorkItem-JMS module ..."/>	
+		<javac debug="true" destdir="${classes.root}/WorkItem-JMS/${dbase}" nowarn="true">
+			<src path="${WorkItem-JMS.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+
+	<!--  To continue for jar building 		-->
+
+	<echo message="Compiling bfsarch-list module ..."/>	
+		<javac debug="true" destdir="${classes.root}/bfsarch-list/${dbase}" nowarn="true">
+			<src path="${bfsarch-list.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling GMDCache module ..."/>	
+		<javac debug="true" destdir="${classes.root}/GMDCache/${dbase}" nowarn="true">
+			<src path="${GMDCache.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>
+	
+	 <echo message="Compiling broadcast-bean module ..."/>	
+		<javac debug="true" destdir="${classes.root}/broadcast-bean/${dbase}" nowarn="true">
+			<src path="${broadcast-bean.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac> 
+
+	
+
+	<!-- <echo message="Compiling Domains module ..."/>	
+		<javac debug="true" destdir="${classes.root}/Domains/${dbase}" nowarn="true">
+			<src path="${Domains.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac>  -->
+
+
+	<echo message="Compiling mcbatch module ..."/>	
+		<javac debug="true" destdir="${classes.root}/mcbatch/${dbase}" nowarn="true">
+			<src path="${mcbatch.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac> 
+
+	<echo message="Compiling mcutil module ..."/>	
+		<javac debug="true" destdir="${classes.root}/mcutil/${dbase}" nowarn="true">
+			<src path="${mcutil.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+      			</fileset>
+		</classpath>
+	</javac> 
+
+	
+
+
+      <echo message="COMPILATION SUCCESSFULL ........."/>
+
+
+
+	<!-- ********************************************************************  -->
+	<echo message="COMPILING WEB MODULES ........."/>
+
+      <echo message="Compiling AjaxFramework module ..."/>	
+		<javac debug="true" destdir="${classes.root}/AjaxFramework" nowarn="true">
+			<src path="${AjaxFramework.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+				<exclude name="**/ErrorMessages-RP.jar"/>
+      			</fileset>
+		</classpath>
+	</javac> 
+
+	<echo message="Compiling ANGUI module ..."/>	
+		<javac debug="true" destdir="${classes.root}/ANGUI" nowarn="true">
+			<src path="${ANGUI.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+				<exclude name="**/ErrorMessages-RP.jar"/>
+
+      			</fileset>
+		</classpath>
+	</javac> 
+
+      <echo message="Compiling bfsarch-tags module ..."/>	
+		<javac debug="true" destdir="${classes.root}/bfsarch-tags/${dbase}" nowarn="true">
+			<src path="${bfsarch-tags.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac>  
+
+	 <echo message="Compiling dboard module ..."/>	
+		<javac debug="true" destdir="${classes.root}/dboard" nowarn="true">
+			<src path="${dboard.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac>  
+
+	<echo message="Compiling guifw module ..."/>	
+		<javac debug="true" destdir="${classes.root}/guifw" nowarn="true">
+			<src path="${guifw.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling guilib module ..."/>	
+		<javac debug="true" destdir="${classes.root}/guilib" nowarn="true">
+			<src path="${guilib.srcdir}"/>
+			<classpath>			
+			<pathelement path="${classes.root}/guifw" />
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac>
+
+	<echo message="Compiling guitypes module ...*********************"/>	
+		<javac debug="true" destdir="${classes.root}/guitypes" nowarn="true">
+			<src path="${guitypes.srcdir}"/>
+			<classpath>			
+			<pathelement path="${classes.root}/guilib" />
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+        			<exclude name="**/guilib.jar"/>
+			</fileset>
+		</classpath>
+	</javac>
+
+      <echo message="Compiling MCStrutsLib module ..."/>	
+		<javac debug="true" destdir="${classes.root}/MCStrutsLib" nowarn="true">
+			<src path="${MCStrutsLib.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+				<exclude name="**/ErrorMessages-RP.jar"/>
+
+			</fileset>
+		</classpath>
+	</javac>
+
+<echo message="Compiling MCTagLib module ..."/>	
+		<javac debug="true" destdir="${classes.root}/MCTagLib" nowarn="true">
+			<src path="${MCTagLib.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac>
+
+
+ <!-- <echo message="Compiling RPGUI module ..."/>	
+		<javac debug="true" destdir="${classes.root}/RPGUI" nowarn="true">
+			<src path="${RPGUI.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac>
+-->
+
+
+<!--  <echo message="Compiling report-controller module ..."/>	
+		<javac debug="true" destdir="${classes.root}/report-controller" nowarn="true">
+			<src path="${report-controller.srcdir}"/>
+			<classpath>	
+			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac> 
+-->
+
+
+
+<!-- <echo message="Compiling rmcGUI module ..."/>	
+		<javac debug="true" destdir="${classes.root}/rmcGUI" nowarn="true">
+			<src path="${rmcGUI.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac>
+-->
+
+
+
+<!-- <echo message="Compiling userlib module ..."/>	
+		<javac debug="true" destdir="${classes.root}/userlib" nowarn="true">
+			<src path="${userlib.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac>
+-->
+
+<!-- <echo message="Compiling webarch module ..."/>	
+		<javac debug="true" destdir="${classes.root}/webarch" nowarn="true">
+			<src path="${webarch.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac>
+-->
+
+<!-- <echo message="Compiling wfeGUI module ...****"/>	
+		<javac debug="true" destdir="${classes.root}/wfeGUI" nowarn="true">
+			<src path="${wfeGUI.srcdir}"/>
+			 
+			<classpath>	
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac>
+-->
+
+<echo message="Compiling wfwGUI module ..."/>	
+		<javac debug="true" destdir="${classes.root}/wfwGUI" nowarn="true">
+			<src path="${wfwGUI.srcdir}"/>
+			<classpath>			
+			<fileset dir="${stable-jar.dir}">
+        			<include name="**/*.jar"/>
+			</fileset>
+		</classpath>
+	</javac>
+
+
+
+
+
+
+       
+<!-- **************WEB modules compilation*********************** -->
+
+</target>
+
+<target name="jar" depends="compile">
+<echo message="Deleting all jars from ${basedir}/mybuilds/${br.name}  ... " />
+<!--
+<delete failonerror="false">
+	<fileset dir="${basedir}/mybuilds/${br.name}" includes="**/*.jar,**/*.war,**/*.ear"/>
+</delete>
+-->
+
+
+
+	<echo message="Building ARCH.jar from ${classes.root}/ARCH/${dbase} ... " />
+		<jar jarfile="${jar-out}/ARCH.jar" > 
+			<fileset dir="${classes.root}/ARCH/${dbase}" includes="com/**/*.class" />
+		</jar>
+
+	<echo message="Building archival-batch.jar from ${classes.root}/Archival ... " />
+		<jar jarfile="${jar-out}/archival-batch.jar" > 
+			<fileset dir="${classes.root}/archival-batch/${dbase}" includes="com/**/*.class" />
+			<fileset dir="${archival-batch.srcdir}" includes="com/**/*.xml" />
+			<fileset dir="${archival-batch.srcdir}" includes="com/**/*.properties" />
+		</jar>
+
+	<echo message="Building archival-client.jar from ${classes.root}/archival-client/${dbase} ... " />
+		<jar jarfile="${jar-out}/archival-client.jar" > 
+			<fileset dir="${classes.root}/archival-client/${dbase}" includes="com/**/*.class" />
+		</jar>
+
+
+	<echo message="Building bfsarch-batch.jar from ${classes.root}/bfsarch-batch/${dbase} ... " />
+		<jar jarfile="${jar-out}/bfsarch-batch.jar" > 
+			<fileset dir="${classes.root}/bfsarch-batch/${dbase}" includes="com/**/*.class" />
+		</jar>
+
+	<echo message="Building bfsarch-archbase.jar from ${classes.root}/bfsarch-archbase/${dbase} ... " />
+		<jar jarfile="${jar-out}/bfsarch-archbase.jar" > 
+			<fileset dir="${classes.root}/bfsarch-archbase/${dbase}" includes="com/**/*.class" />
+		</jar>
+
+
+	<echo message="Building bfsarch-anbase.jar from ${classes.root}/bfsarch-anbase/${dbase} ... " />
+		<jar jarfile="${jar-out}/bfsarch-anbase.jar" > 
+			<fileset dir="${classes.root}/bfsarch-anbase/${dbase}" includes="com/**/*.class" />
+		</jar>
+
+
+	<echo message="Building bfsarch.jar from ${classes.root}/bfsarch/${dbase} ... " />
+		<jar jarfile="${jar-out}/bfsarch.jar" > 
+			<fileset dir="${classes.root}/bfsarch/${dbase}" includes="com/**/*.class" excludes="com/tcs/ncs/**/*.class" />
+			<fileset dir="${classes.root}/bfsarch/${dbase}" includes="com/tcs/bfsarch/**/*.properties" />
+		</jar>
+
+
+	<echo message="Building AN.jar from ${classes.root}/AN/${dbase} ... " />
+		<jar jarfile="${jar-out}/AN.jar" > 
+			<fileset dir="${classes.root}/AN/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+	<echo message="Building bfsarch-jmx.jar from ${classes.root}/bfsarch-jmx/${dbase} ... " />
+		<jar jarfile="${jar-out}/bfsarch-jmx.jar" > 
+			<fileset dir="${classes.root}/bfsarch-jmx/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+	<echo message="Building RP.jar from ${classes.root}/RP/${dbase} ... " />
+		<jar jarfile="${jar-out}/RP.jar" > 
+			<fileset dir="${classes.root}/RP/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+	<echo message="Building bfsarch-rpbase.jar from ${classes.root}/bfsarch-rpbase/${dbase} ... " />
+		<jar jarfile="${jar-out}/bfsarch-rpbase.jar" > 
+			<fileset dir="${classes.root}/bfsarch-rpbase/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+
+	<echo message="Building bfsejb.jar from ${classes.root}/bfsejb/${dbase} ... " />
+		<jar jarfile="${jar-out}/bfsejb.jar" > 
+			<fileset dir="${classes.root}/bfsejb/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+
+
+	<echo message="Building rmc.jar from ${classes.root}/rmc/${dbase} ... " />
+		<jar jarfile="${jar-out}/rmc.jar" > 
+			<fileset dir="${classes.root}/rmc/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+
+
+	<echo message="Building mctype.jar from ${classes.root}/mctype/${dbase} ... " />
+		<jar jarfile="${jar-out}/mctype.jar" > 
+			<fileset dir="${classes.root}/mctype/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+
+	<echo message="Building wfe.jar from ${classes.root}/wfe/${dbase} ... " />
+		<jar jarfile="${jar-out}/wfe.jar" > 
+			<fileset dir="${classes.root}/wfe/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+
+	<echo message="Building wfw.jar from ${classes.root}/wfw/${dbase} ... " />
+		<jar jarfile="${jar-out}/wfw.jar" > 
+			<fileset dir="${classes.root}/wfw/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+
+	<echo message="Building WorkItem-JMS.jar from ${classes.root}/WorkItem-JMS/${dbase} ... " />
+		<jar jarfile="${jar-out}/WorkItem-JMS.jar" > 
+			<fileset dir="${classes.root}/WorkItem-JMS/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+
+	<echo message="Building bfsarch-list.jar from ${classes.root}/bfsarch-list/${dbase} ... " />
+		<jar jarfile="${jar-out}/bfsarch-list.jar" > 
+			<fileset dir="${classes.root}/bfsarch-list/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+ 	<echo message="Building GMDCache.jar from ${classes.root}/GMDCache/${dbase} ... " />
+		<jar jarfile="${jar-out}/GMDCache.jar" > 
+			<fileset dir="${classes.root}/GMDCache/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+	<echo message="Building broadcast-bean.jar from ${classes.root}/broadcast-bean/${dbase} ... " />
+		<jar jarfile="${jar-out}/broadcast-bean.jar" > 
+			<fileset dir="${classes.root}/broadcast-bean/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+
+	<echo message="Building Domains.jar from ${classes.root}/Domains/${dbase} ... " />
+		<jar jarfile="${jar-out}/Domains.jar" > 
+			<fileset dir="${classes.root}/Domains/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+
+	<echo message="Building mcbatch.jar from ${classes.root}/mcbatch/${dbase} ... " />
+		<jar jarfile="${jar-out}/mcbatch.jar" > 
+			<fileset dir="${classes.root}/mcbatch/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+	<echo message="Building mcutil.jar from ${classes.root}/mcutil/${dbase} ... " />
+		<jar jarfile="${jar-out}/mcutil.jar" > 
+			<fileset dir="${classes.root}/mcutil/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+
+
+
+	<!-- ********************************************************************  -->
+
+	<echo message="Building WEB jars  ................... " />
+
+
+	<echo message="Building AjaxFramework.jar from ${classes.root}/AjaxFramework ... " />
+		<jar jarfile="${jar-out}/AjaxFramework.jar" > 
+			<fileset dir="${classes.root}/AjaxFramework" includes="com/**/*.class"	/>
+		</jar>
+
+
+	<echo message="Building ANGUI.jar from ${classes.root}/ANGUI  ... " />
+		<jar jarfile="${jar-out}/ANGUI.jar" > 
+			<fileset dir="${classes.root}/ANGUI" includes="com/**/*.class"	/>
+		</jar>
+
+
+
+	<echo message="Building bfsarch-tags.jar from ${classes.root}/bfsarch-tags/${dbase} ... " />
+		<jar jarfile="${jar-out}/bfsarch-tags.jar" > 
+			<fileset dir="${classes.root}/bfsarch-tags/${dbase}" includes="com/**/*.class"	/>
+		</jar>
+
+	<echo message="Building dboard.jar from ${classes.root}/dboard ... " />
+		<jar jarfile="${jar-out}/dboard.jar" > 
+			<fileset dir="${classes.root}/dboard" includes="com/**/*.class"/>
+		</jar>
+
+	<echo message="Building guifw.jar from ${classes.root}/guifw ... " />
+		<jar jarfile="${jar-out}/guifw.jar" > 
+			<fileset dir="${classes.root}/guifw" includes="com/**/*.class"/>
+		</jar>
+
+	<echo message="Building guilib.jar from ${classes.root}/guilib ... " />
+		<jar jarfile="${jar-out}/guilib.jar" > 
+			<fileset dir="${classes.root}/guilib" includes="com/**/*.class"/>
+		</jar>
+
+	<echo message="Building guitypes.jar from ${classes.root}/guitypes ... " />
+		<jar jarfile="${jar-out}/guitypes.jar" > 
+			<fileset dir="${classes.root}/guitypes" includes="com/**/*.class"/>
+		</jar>
+
+
+
+
+
+
+
+
+</target>
+
+<target name="copy" depends="jar">
+
+	<!-- This is to check in to GIT		-->
+	<echo message="Copying modified files from ${br.name}/APP-INF/lib  to ${stable-jar.dir}  ...... " />
+<!--	<copy todir="${stable-jar.dir}" >
+		<fileset dir="${jar-out}" excludes="Thumbs.db,ARCH.jar,RP.jar">
+		</fileset> 
+	</copy>				-->
+	<!-- Check in to git repository over -->
+	
+
+</target>
+
+<target name="war" depends="copy">
+
+<!-- 		COMMENTING war task temporarily
+<war destfile="${basedir}/mybuilds/${br.name}/BancsWeb.war">
+  <fileset dir="${rep}/BancsWeb" excludes="**/*.jar,**/lib/**"/>
+  <fileset dir="${rep}/mcroot/Deployment">
+	<include name="**/c/**"/>
+	<include name="**/stylesheets/**"/>
+	<include name="**/common/**"/>
+	<include name="**/broadcast/**"/>
+	<include name="index.jsp"/>
+   </fileset>
+
+</war>
+-->
+
+</target>
+
+
+<target name="ear" depends="war">
+<!-- 		COMMENTING ear task temporarily
+	<ear destfile="${build.dir}/Bancs.ear" appxml="${work}/metadata/application.xml">
+	      <fileset dir="${build.dir}" includes="**/APP-INF/**/*.jar"/>
+	      <fileset dir="${build.dir}" includes="**/*.war"/>
+	</ear>
+-->
+
+</target>
+	
+<!-- =================================================================== -->
+<!-- main: call previous ant tasks -->
+<!-- =================================================================== -->
+
+<!-- ********************GIT Activities ******************     -->
+
+<target name="cloning" description="Clone the repository to the local server.">
+	<git command = "clone">
+	<args>
+	<arg value = "git@172.19.98.52:ARCHITECTURE.git" />
+	   </args>
+	</git>
+<echo message="The cloning is done******************   "/>
+
+</target>
+<target name="gitoper" description="Clone the repository to the local server." depends="cloning" >
+	<!--	<input	message="Please enter the branch you want to work with : "
+		addproperty="br.name"
+		defaultvalue="master"
+		/>  -->
+
+<property name="br.name" value="master"/>
+	<echo message="The input given is ${br.name}   "/>
+
+<!--	<git command = "checkout" dir = "ARCHITECTURE">
+			<args>
+			<arg value = "${br.name}" />
+			</args>
+	</git>
+	<git command = "pull" dir = "ARCHITECTURE" >
+			<args>
+			<arg value = "origin" />
+			<arg value = "${br.name}" />
+			</args>
+	</git>							-->
+	<git command = "status" dir = "ARCHITECTURE" />
+</target>
+
+
+<target name="master-task" depends="gitoper,prop,ear" />
+
+</project>

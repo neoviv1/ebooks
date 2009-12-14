@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<project name="Build-from-GIT" default="master-task" basedir="." >
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
+
+<target name="prop">
+
+	<property name="include-src" value="false"/>
+	
+	<echo message="The input given is ${db.user} !!!!!!!   "/>
+	<property name="build.dir" value="${basedir}/mybuilds/${br.name}"/>
+	<property name="temp.loc" value="${basedir}/mybuilds/temp"/>
+	<property name="zip.root" value="${basedir}/mybuilds"/>
+	<property name="rep" value="${basedir}/ARCH"/>
+
+	
+	<property name="classes.root" value="${build.dir}/classes"/>
+	<property name="jar.root" value="${build.dir}/jars"/>
+	<property name="dbase" value="Oracle"/>
+	<property name="work" value="${rep}/Sources/Ear/SVR_Modules"/>
+	<property name="web" value="${rep}/Sources/Ear/WEB_Modules"/>
+	
+<!--	<property name="jar-out" value="${basedir}/mybuilds/${br.name}/APP-INF/lib"/>  -->	<!-- Please change the jar-out location as per the requirement -->
+	<property name="jar-out" value="${basedir}/wip"/>
+	<property name="stable-jar.dir" value="${rep}/StableJars"/>
+</target>
+
+<!-- =================================================================== -->
+<!-- Creates the ear archives -->
+<!-- =================================================================== --> 
+	
+<target name="mkdir" depends="prop">
+
+	<mkdir dir="${basedir}/mybuilds"/>
+	<mkdir dir="${basedir}/mybuilds/temp"/>
+	<mkdir dir="${basedir}/mybuilds/temp/APP-INF/lib"/>
+	<mkdir dir="${basedir}/mybuilds/temp/WEB-INF"/>
+</target>	
+
+
+
+<target name="cop" depends="mkdir">
+<copy todir="${temp.loc}/WEB-INF">
+    <fileset dir="${rep}" includesfile="${rep}/patch" excludes="**/*.java" />
+</copy>
+</target>
+
+<target name="mov" depends="cop">
+	<move todir="${temp.loc}/WEB-INF">
+	    <fileset dir="${temp.loc}/WEB-INF/Sources/Ear/WEB_Modules/" />
+	</move>
+	<delete dir="${temp.loc}/WEB-INF/Sources"/>
+</target>
+
+
+<target name="arc" depends="mov">
+	<echo message="Creating a new zip file set  ...... " />
+	<zip destfile="${zip.root}/abcd.zip" >
+		<fileset dir="${temp.loc}" includes="**"/>
+		<!--zipfileset dir="." includes="/home/archbuild/base_rep/fulpat" fullpath="META/MANIFEST"/-->
+		<zipfileset dir="${rep}" includes="fulpat" fullpath="META-INF/changesets"/>
+		<!--zipfileset dir="${rep}" includes="version.properties" fullpath="META-INF/version"/-->
+	</zip>
+	<delete dir="${temp.loc}"/>
+</target>	
+
+
+
+
+<!-- =================================================================== -->
+<!-- main: call previous ant tasks -->
+<!-- =================================================================== -->
+
+
+<target name="master-task" depends="arc" />
+
+</project>

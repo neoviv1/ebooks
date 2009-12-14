@@ -53,10 +53,18 @@
 		<property file="${rep}/version.properties"/>
 
 
+
 </target>
 
+<target name="tst" depends="prop">
+<tstamp>
+      <format property="touch.time" pattern="yyyy-MM-dd hh:mm"
+                    unit="hour"/>
+</tstamp>
+    <echo message="Compiling all java ...        ${touch.time}"/>
+</target>
 
-<target name="mkdir" depends="prop">
+<target name="mkdir" depends="tst">
 		<mkdir dir="${basedir}/mybuilds"/>
 		<mkdir dir="${basedir}/mybuilds/${db.user}"/>
 		<mkdir dir="${basedir}/mybuilds/${db.user}/jars"/>
@@ -83,18 +91,19 @@
 			</exec-->
 
 
-		<javac srcdir ="${rep}" destdir="${classes.root}"  includesfile="${rep}/patch" >
-
+		<javac srcdir ="${work}/RP-jar/src" destdir="${classes.root}" >
 			<classpath>
-					<fileset dir="${commonlib.dir}">
-					<include name="**/*.jar"/>
-					</fileset>
 					<fileset dir="${stable-jar.dir}">
-					<include name="*.jar"/>
+					<include name="**/*.jar" />
 					</fileset>
 			</classpath>
-		<!--include name="RP-jar/src/com/tcs/bancs/RP/DATA_SOURCE_DETAILS.java"/-->
-
+		</javac>
+		<javac srcdir ="${work}/AN-jar/src" destdir="${classes.root}">
+			<classpath>
+					<fileset dir="${stable-jar.dir}">
+					<include name="**/*.jar" />
+					</fileset>
+			</classpath>
 		</javac>
 
 </target>
@@ -167,14 +176,19 @@ override="true"/>
 				<attribute name="Specification-Version" value="${version}"/>
 				<attribute name="Specification-Vendor" value="Example Organization"/>
 				<attribute name="Implementation-Title" value="common"/>
-				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Version" value="${version} ${TODAY}  ${touch.time}"/> 
 				<attribute name="Implementation-Vendor" value="Example Corp."/>
 		   </section>
 	 </manifest>
-		<echo message="Building the patch jar from  ... " />
-		<jar jarfile="${jar.root}/patch.jar" filesetmanifest="skip" manifest="MANIFEST.MF"> 
+		<echo message="Building the RP-jar from  ... " />
+		<jar jarfile="${jar.root}/RP.jar" filesetmanifest="skip" manifest="MANIFEST.MF"> 
 		<metainf dir="${rep}" includes="fulpat"/>
-		<fileset dir="${classes.root}" includes="com/**/*.class" />
+		<fileset dir="${classes.root}" includes="com/**/RP/*.class" />
+		</jar>
+		<echo message="Building the AN-jar from  ... " />
+		<jar jarfile="${jar.root}/AN.jar" filesetmanifest="skip" manifest="MANIFEST.MF"> 
+		<metainf dir="${rep}" includes="fulpat"/>
+		<fileset dir="${classes.root}" includes="com/**/AN/*.class" />
 		</jar>
 
 		<zip destfile="${zip.root}/${ver}.patch" >
